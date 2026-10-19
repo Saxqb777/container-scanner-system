@@ -6,7 +6,7 @@ const sheet: SheetEntry[] = [
   { row_number: 6, container_no: "TCLU9276404", seal_no: "20260978" },
   { row_number: 7, container_no: "MSKU3395635", seal_no: null },
   { row_number: 8, container_no: "MSKU3395635", seal_no: null },
-  { row_number: 9, container_no: "MAEU9939086", seal_no: null },
+  { row_number: 9, container_no: "MAEU9939086", seal_no: null, other_seals: ["20260611"] },
 ];
 
 const one = (container: string, seal: string) => evaluateSets([{ id: "a", container, seal }], sheet)[0];
@@ -34,6 +34,10 @@ describe("evaluateSets", () => {
 
   it("blocks containers listed twice", () => {
     expect(one("MSKU3395635", "555555").issues.join()).toMatch(/listed 2 times/);
+  });
+
+  it("blocks a seal that sits in another seal column, like Revised Seal", () => {
+    expect(one("MRSU4985257", "20260611").issues.join()).toMatch(/already used on MAEU9939086 \(row 9, in another seal column\)/);
   });
 
   it("blocks a seal already used on another container", () => {

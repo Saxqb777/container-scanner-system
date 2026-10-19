@@ -9,9 +9,11 @@ export type Layout = {
   sealCol: number;
 };
 
-export type SheetRow = { row: number; container: string; seal: string | null };
+export type SheetRow = { row: number; container: string; seal: string | null; otherSeals: string[] };
 
 export type ParsedSheet = Layout & {
+  /** Other seal columns on the heading row, such as "Revised Seal". Their seals count as used. */
+  otherSealCols: number[];
   rows: SheetRow[];
   warnings: string[];
   errors: string[];
@@ -87,13 +89,21 @@ export function readRows(wb: ExcelJS.Workbook, layout: Layout): ParsedSheet {
   const containerRows = new Map<string, number[]>();
   const sealRows = new Map<string, number[]>();
 
+  const otherSealCols: number[] = [];
+  for (let c = 1; c <= ws.columnCount; c++) {
+    if (c !== layout.sealCol && c !== layout.containerCol && isSealHeading(cellText(ws, layout.headerRow, c))) {
+      otherSealCols.push(c);
+    }
+  }
+
   for (let r = layout.headerRow + 1; r <= ws.rowCount; r++) {
     const rawContainer = cellText(ws, r, layout.containerCol);
     if (!rawContainer) continue;
     const container = normalizeContainer(rawContainer);
     const sealText = normalizeSeal(cellText(ws, r, layout.sealCol));
     const seal = sealText || null;
-    rows.push({ row: r, container, seal });
+    const otherSeals = [...new Set(otherSealCols.map((c) => normalizeSeal(cellText(ws, r, c))).filter(Boolean))];
+    rows.push({ row: r, container, seal, otherSeals });
 
     const check = checkContainer(container);
     if (!check.ok) warnings.push(`Row ${r}: "${rawContainer}" - ${check.reason}`);
@@ -111,21 +121,5 @@ export function readRows(wb: ExcelJS.Workbook, layout: Layout): ParsedSheet {
   }
   if (rows.length === 0) errors.push("No container numbers found under the heading.");
 
-  return { ...layout, rows, warnings, errors };
-}
-
-/** Writes the current seal state into the original file, keeping its formatting. */
-export async function fillWorkbook(
-  original: Buffer,
-  layout: Layout,
-  seals: { row: number; seal: string | null }[],
-): Promise<Buffer> {
-  const wb = await loadWorkbook(original);
-  const ws = wb.getWorksheet(layout.sheetName);
-  if (!ws) throw new Error(`Sheet "${layout.sheetName}" not found`);
-  for (const { row, seal } of seals) {
-    // Stored as text so seal numbers with leading zeros survive.
-    ws.getRow(row).getCell(layout.sealCol).value = seal ?? null;
-  }
-  return Buffer.from(await wb.xlsx.writeBuffer());
+  return { ...layout, otherSealCols, rows, warnings, errors };
 }

@@ -3,7 +3,13 @@ import { checkSeal } from "./seal";
 
 export type SetInput = { id: string; container: string; seal: string };
 
-export type SheetEntry = { row_number: number; container_no: string; seal_no: string | null };
+export type SheetEntry = {
+  row_number: number;
+  container_no: string;
+  seal_no: string | null;
+  /** Seals in other seal columns, such as "Revised Seal". */
+  other_seals?: string[];
+};
 
 export type SetStatus = "ready" | "done" | "error";
 
@@ -22,10 +28,12 @@ export type SetResult = {
  */
 export function evaluateSets(sets: SetInput[], sheet: SheetEntry[]): SetResult[] {
   const byContainer = new Map<string, SheetEntry[]>();
-  const bySeal = new Map<string, SheetEntry>();
+  const bySeal = new Map<string, { entry: SheetEntry; other: boolean }>();
   for (const entry of sheet) {
     byContainer.set(entry.container_no, [...(byContainer.get(entry.container_no) ?? []), entry]);
-    if (entry.seal_no) bySeal.set(entry.seal_no, entry);
+    // A seal anywhere in the sheet is used, even one that was later revised.
+    for (const s of entry.other_seals ?? []) if (!bySeal.has(s)) bySeal.set(s, { entry, other: true });
+    if (entry.seal_no) bySeal.set(entry.seal_no, { entry, other: false });
   }
 
   const checked = sets.map((s) => ({ input: s, container: checkContainer(s.container), seal: checkSeal(s.seal) }));
@@ -70,8 +78,9 @@ export function evaluateSets(sets: SetInput[], sheet: SheetEntry[]): SetResult[]
 
     if (seal.ok && !done) {
       const owner = bySeal.get(seal.value);
-      if (owner && owner.container_no !== container.value) {
-        issues.push(`Seal already used on ${owner.container_no} (row ${owner.row_number})`);
+      if (owner && owner.entry.container_no !== container.value) {
+        const where = owner.other ? `row ${owner.entry.row_number}, in another seal column` : `row ${owner.entry.row_number}`;
+        issues.push(`Seal already used on ${owner.entry.container_no} (${where})`);
       }
     }
 

@@ -9,7 +9,7 @@ Drop a container photo and its seal photo. The app reads both numbers, finds the
 3. Claude reads each photo. The container number is checked against the ISO 6346 check digit.
 4. Every set is checked against the sheet and shows **Ready**, **Already in sheet**, **Check numbers** or **Problem**.
 5. **Write** shows a final list of row, container and seal. Only Ready sets are written.
-6. **Download filled Excel** gives back your original file with the seal column filled in.
+6. **Download filled Excel** gives back your original file with the seal column filled in. Only the cells the app filled are changed. Pivot tables, dropdowns, formulas and formatting stay as they were, and Excel recalculates formulas when the file opens.
 
 ## What it blocks
 
@@ -21,6 +21,7 @@ Drop a container photo and its seal photo. The app reads both numbers, finds the
 | Container listed more than once in the sheet | Problem |
 | Seal cell already has a different number | Problem, never overwritten |
 | Seal number already on another container | Problem |
+| Seal number already in another seal column, such as "Revised Seal" | Problem |
 | Same container or seal twice in one batch | Problem |
 | Photo read with low confidence | Check numbers (a person confirms) |
 | Photos not in container then seal order | Check numbers, with a seal photo picker |
@@ -35,7 +36,7 @@ Every write and undo is kept in the Activity log. The newest write on a containe
 - Next.js on Vercel
 - Neon Postgres (sheet rows, seals, activity log, and the original .xlsx)
 - Claude (`claude-opus-5-5`) reads the photos
-- ExcelJS fills the original file so its formatting stays
+- ExcelJS reads the sheet; the download edits only the seal cells inside the original file
 
 ## Setup
 
@@ -73,3 +74,5 @@ npm test
 - Only .xlsx is supported. Old .xls files need Save As .xlsx first.
 - Uploading a new base sheet switches to it. The old one stays in the database but is no longer used, so download it first if you need it.
 - Photos are shrunk in the browser before upload and are not stored.
+- Seals made only of digits (no leading zero) are written as numbers. Anything else is written as text.
+- Other columns on the heading row with "seal" in the name (for example "Revised Seal") are never written to, but their seals count as used.

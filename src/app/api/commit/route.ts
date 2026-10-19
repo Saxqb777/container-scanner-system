@@ -27,7 +27,8 @@ export async function POST(req: Request) {
         continue;
       }
       try {
-        // Only writes when exactly one row has this container and its seal is still empty.
+        // Only writes when exactly one row has this container, its seal is still empty,
+        // and the seal isn't in any other seal column of the sheet.
         const rows = (await sql()`
           with target as (
             select id from containers where workbook_id = ${workbook.id} and container_no = ${r.container}
@@ -35,6 +36,10 @@ export async function POST(req: Request) {
           upd as (
             update containers set seal_no = ${r.seal}, sealed_at = now()
             where id = (select id from target) and seal_no is null and (select count(*) from target) = 1
+              and not exists (
+                select 1 from containers
+                where workbook_id = ${workbook.id} and container_no <> ${r.container} and ${r.seal} = any(other_seals)
+              )
             returning row_number
           )
           insert into audit_log (workbook_id, action, container_no, seal_no, row_number)

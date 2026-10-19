@@ -16,8 +16,12 @@ create table if not exists containers (
   row_number int not null,
   container_no text not null,
   seal_no text,
+  -- Seals in other seal columns of the row (e.g. "Revised Seal"). Read only, but count as used.
+  other_seals text[] not null default '{}',
   sealed_at timestamptz
 );
+
+alter table containers add column if not exists other_seals text[] not null default '{}';
 
 create index if not exists containers_lookup on containers (workbook_id, container_no);
 
