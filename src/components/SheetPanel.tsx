@@ -64,7 +64,10 @@ export default function SheetPanel({
         setWarnings(data.warnings ?? []);
         setNotice(
           `Loaded ${data.count} containers from "${data.layout.sheetName}". Container column ${colLetter(data.layout.containerCol)}, seal column ${colLetter(data.layout.sealCol)}, headings on row ${data.layout.headerRow}.` +
-            (data.prefilled ? ` ${data.prefilled} already had a seal.` : ""),
+            (data.prefilled ? ` ${data.prefilled} already had a seal.` : "") +
+            (data.otherSealCols?.length
+              ? ` Seals in column ${data.otherSealCols.map(colLetter).join(", ")} also count as used.`
+              : ""),
         );
         onUploaded();
         return;

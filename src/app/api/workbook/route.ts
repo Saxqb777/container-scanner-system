@@ -70,10 +70,15 @@ export async function POST(req: Request) {
       ),
       off as (update workbooks set active = false where active),
       ins as (
-        insert into containers (workbook_id, row_number, container_no, seal_no)
-        select (select id from w), r.row_number, r.container_no, r.seal_no
-        from unnest(${rows.map((r) => r.row)}::int[], ${rows.map((r) => r.container)}::text[], ${rows.map((r) => r.seal)}::text[])
-          as r(row_number, container_no, seal_no)
+        insert into containers (workbook_id, row_number, container_no, seal_no, other_seals)
+        select (select id from w), r.row_number, r.container_no, r.seal_no,
+          array(select jsonb_array_elements_text(r.other_seals::jsonb))
+        from unnest(
+          ${rows.map((r) => r.row)}::int[],
+          ${rows.map((r) => r.container)}::text[],
+          ${rows.map((r) => r.seal)}::text[],
+          ${rows.map((r) => JSON.stringify(r.otherSeals))}::text[]
+        ) as r(row_number, container_no, seal_no, other_seals)
         returning 1
       )
       insert into audit_log (workbook_id, action, note)
@@ -87,6 +92,7 @@ export async function POST(req: Request) {
       layout,
       count: rows.length,
       prefilled: rows.filter((r) => r.seal).length,
+      otherSealCols: parsed.otherSealCols,
       warnings: parsed.warnings,
     });
   } catch (err) {
