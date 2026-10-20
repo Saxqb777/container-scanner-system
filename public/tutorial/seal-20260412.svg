@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <defs>
+    <pattern id="rib" width="18" height="240" patternUnits="userSpaceOnUse">
+      <rect width="18" height="240" fill="#4b5157"/>
+      <rect x="1" width="6" height="240" fill="#565d64"/>
+      <rect x="13" width="3" height="240" fill="#3c4146"/>
+    </pattern>
+    <linearGradient id="shaft" x1="0" x2="1">
+      <stop offset="0" stop-color="#7d8288"/><stop offset="0.5" stop-color="#e2e4e6"/><stop offset="1" stop-color="#6a6f74"/>
+    </linearGradient>
+    <linearGradient id="head" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffd23f"/><stop offset="1" stop-color="#e3a400"/>
+    </linearGradient>
+    <linearGradient id="lock" x1="0" x2="1">
+      <stop offset="0" stop-color="#c58d00"/><stop offset="0.5" stop-color="#ffcf33"/><stop offset="1" stop-color="#b47f00"/>
+    </linearGradient>
+    <radialGradient id="v" cx="50%" cy="45%" r="75%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>
+    </radialGradient>
+  </defs>
+  <rect width="240" height="240" fill="url(#rib)"/>
+  <rect x="96" y="12" width="48" height="60" rx="4" fill="#6d7378"/>
+  <rect x="108" y="30" width="24" height="16" rx="3" fill="#2c3034"/>
+  <rect x="113" y="14" width="14" height="190" fill="url(#shaft)"/>
+  <rect x="34" y="78" width="172" height="70" rx="10" fill="url(#head)"/>
+  <rect x="34" y="78" width="172" height="70" rx="10" fill="none" stroke="#a87800" stroke-width="2"/>
+  <text x="120" y="98" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" letter-spacing="2" fill="#5a4100">BOLT SEAL</text>
+  <text x="120" y="133" text-anchor="middle" font-family="'Courier New', Courier, monospace" font-size="32" font-weight="700" letter-spacing="1" fill="#1b1b19">20260412</text>
+  <rect x="98" y="186" width="44" height="40" rx="6" fill="url(#lock)"/>
+  <rect x="98" y="196" width="44" height="3" fill="#a87800" opacity="0.6"/>
+  <rect x="98" y="206" width="44" height="3" fill="#a87800" opacity="0.6"/>
+  <rect width="240" height="240" fill="url(#v)"/>
+</svg>

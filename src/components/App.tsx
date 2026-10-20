@@ -5,6 +5,8 @@ import { checkContainer, formatContainer } from "@/lib/iso6346";
 import type { SetResult } from "@/lib/validate";
 import SheetPanel, { type WorkbookInfo } from "./SheetPanel";
 import ActivityLog from "./ActivityLog";
+import Tutorial from "./Tutorial";
+import { tutorialDone } from "@/lib/tutorial";
 import { downscale } from "./image";
 
 type Kind = "container" | "seal" | "unclear";
@@ -108,6 +110,8 @@ export default function App() {
   const [banner, setBanner] = useState<{ kind: "error" | "ok"; text: string } | null>(null);
   const [logVersion, setLogVersion] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [touring, setTouring] = useState(false);
+  const tourChecked = useRef(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const queue = useRef<{ id: string; file: File }[]>([]);
   const active = useRef(0);
@@ -122,6 +126,13 @@ export default function App() {
   useEffect(() => {
     loadWorkbook();
   }, [loadWorkbook]);
+
+  // First visit: open the tour once the page has its real layout.
+  useEffect(() => {
+    if (workbook === undefined || tourChecked.current) return;
+    tourChecked.current = true;
+    if (!tutorialDone()) setTouring(true);
+  }, [workbook]);
 
   const updatePhoto = (id: string, patch: Partial<Photo>) =>
     setPhotos((list) => list.map((p) => (p.id === id ? { ...p, ...patch } : p)));
@@ -327,9 +338,14 @@ export default function App() {
           <span className="brand-mark" aria-hidden />
           Seal Register
         </div>
-        <button className="btn btn-ghost" onClick={logout}>
-          Log out
-        </button>
+        <div className="topbar-actions">
+          <button className="btn tour-help" onClick={() => setTouring(true)} aria-label="Show the tour" title="Show the tour">
+            ?
+          </button>
+          <button className="btn btn-ghost" onClick={logout}>
+            Log out
+          </button>
+        </div>
       </header>
 
       <main className="content">
@@ -343,7 +359,7 @@ export default function App() {
         />
 
         {workbook && (
-          <section className="panel">
+          <section className="panel" data-tour="scan">
             <div className="panel-head">
               <h2>Scan sets</h2>
               <span className="hint">Drop the container photo, then its seal photo. Many sets at once is fine.</span>
@@ -351,6 +367,7 @@ export default function App() {
 
             <div
               className={`dropzone${dragging ? " is-over" : ""}`}
+              data-tour="dropzone"
               onDragOver={(e) => {
                 e.preventDefault();
                 setDragging(true);
@@ -519,6 +536,7 @@ export default function App() {
                   )}
                   <button
                     className="btn btn-primary"
+                    data-tour="write"
                     disabled={counts.ready === 0 || writing || checking || !allRead}
                     onClick={() => setConfirming(true)}
                   >
@@ -569,6 +587,8 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {touring && <Tutorial onClose={() => setTouring(false)} />}
     </div>
   );
 }
