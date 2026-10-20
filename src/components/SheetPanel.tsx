@@ -106,7 +106,7 @@ export default function SheetPanel({
   const headerCells = sheet?.rows[(mapping?.headerRow ?? 1) - 1] ?? [];
 
   return (
-    <section className="panel">
+    <section className="panel" data-tour="sheet">
       <div className="panel-head">
         <h2>Base sheet</h2>
         {workbook === undefined && <span className="muted">Loading...</span>}
@@ -130,7 +130,7 @@ export default function SheetPanel({
             </div>
           </div>
           <div className="actions">
-            <a className="btn btn-primary" href="/api/workbook/export">
+            <a className="btn btn-primary" href="/api/workbook/export" data-tour="download">
               Download filled Excel
             </a>
             <button className="btn" onClick={() => input.current?.click()} disabled={busy}>

@@ -53,7 +53,7 @@ export default function ActivityLog({ version, onChanged }: { version: number; o
   }
 
   return (
-    <section className="panel">
+    <section className="panel" data-tour="activity">
       <div className="panel-head">
         <h2>Activity</h2>
         <span className="hint">Last 50 changes to this sheet</span>
